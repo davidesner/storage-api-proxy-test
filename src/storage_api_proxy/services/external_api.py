@@ -1,12 +1,16 @@
-import requests
+import httpx
 import json
 from typing import Optional, Dict
 import random
 import string
+import aiohttp
+from ..core.config import get_settings
 
 class ExternalApiClient:
-    def __init__(self, base_url: str = "https://connection.keboola.com/v2"):
-        self.base_url = base_url
+    def __init__(self):
+        self.settings = get_settings()
+        self.base_url = f"https://{self.settings.storage_api_host}/v2"
+        self.client = httpx.AsyncClient()
 
     def _get_headers(self, token: str) -> Dict[str, str]:
         return {
@@ -14,9 +18,9 @@ class ExternalApiClient:
             "Content-Type": "application/json"
         }
 
-    def get_token_details(self, token: str) -> Dict:
+    async def get_token_details(self, token: str) -> Dict:
         """Verify token and get details"""
-        response = requests.get(
+        response = await self.client.get(
             f"{self.base_url}/storage/tokens/verify",
             headers=self._get_headers(token)
         )
@@ -27,9 +31,9 @@ class ExternalApiClient:
             
         return response.json()
 
-    def get_workspace(self, workspace_name: str, token: str) -> Optional[Dict]:
+    async def get_workspace(self, workspace_name: str, token: str) -> Optional[Dict]:
         """Simulate getting workspace details"""
-        response = requests.get(
+        response = await self.client.get(
             f"{self.base_url}/storage/workspaces/{workspace_name}",
             headers=self._get_headers(token)
         )
@@ -42,10 +46,10 @@ class ExternalApiClient:
             
         return response.json()
 
-    def create_workspace(self, token: str) -> Dict:
+    async def create_workspace(self, token: str) -> Dict:
         """Create a new workspace"""
         # Get token details to create proper workspace name
-        token_details = self.get_token_details(token)
+        token_details = await self.get_token_details(token)
         workspace_name = f"MCP_{token_details['id']}_{token_details.get('description', 'workspace')}"
         
         payload = {
@@ -54,7 +58,7 @@ class ExternalApiClient:
             "readOnlyStorageAccess": True
         }
         
-        response = requests.post(
+        response = await self.client.post(
             f"{self.base_url}/storage/workspaces?async=false",
             headers=self._get_headers(token),
             json=payload
@@ -78,9 +82,9 @@ class ExternalApiClient:
             }
         }
 
-    def reset_password(self, workspace_name: str, token: str) -> Dict:
+    async def reset_password(self, workspace_name: str, token: str) -> Dict:
         """Reset workspace password"""
-        response = requests.post(
+        response = await self.client.post(
             f"{self.base_url}/storage/workspaces/{workspace_name}/password",
             headers=self._get_headers(token)
         )
@@ -97,4 +101,10 @@ class ExternalApiClient:
             "schema": workspace_data.get("connection", {}).get("schema"),
             "user": workspace_data.get("connection", {}).get("user"),
             "password": workspace_data.get("connection", {}).get("password")
-        } 
+        }
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.client.aclose() 

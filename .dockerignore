@@ -1,6 +1,6 @@
-# Database files
-*.db
-*.db-journal
+# Git
+.git
+.gitignore
 
 # Python
 __pycache__/
@@ -13,14 +13,17 @@ __pycache__/
 env/
 venv/
 ENV/
-.python-version
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-.DS_Store
+
+# Database
+*.db
+*.db-journal
+data/
 
 # Distribution / packaging
 dist/
@@ -37,8 +40,14 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
-*.py,cover
 .hypothesis/
-.pytest_cache/ 
+.pytest_cache/
 
-/data
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md
+docs/ 

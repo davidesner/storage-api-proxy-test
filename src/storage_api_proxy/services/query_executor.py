@@ -2,7 +2,7 @@ from typing import Dict
 import snowflake.connector
 from snowflake.connector.cursor import SnowflakeCursor
 
-def execute_query(credentials: Dict, query: str) -> Dict:
+async def execute_query(credentials: Dict, query: str) -> Dict:
     """
     Execute SQL query in Snowflake workspace
     """

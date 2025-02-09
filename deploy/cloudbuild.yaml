@@ -1,0 +1,38 @@
+steps:
+# Install dependencies and run tests
+- name: 'python:3.8'
+  entrypoint: pip
+  args: ['install', 'poetry']
+
+- name: 'python:3.8'
+  entrypoint: poetry
+  args: ['install']
+
+- name: 'python:3.8'
+  entrypoint: poetry
+  args: ['run', 'pytest']
+
+# Build the container image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/storage-api-proxy:$COMMIT_SHA', '-f', 'deploy/Dockerfile', '.']
+
+# Push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/storage-api-proxy:$COMMIT_SHA']
+
+# Deploy container image to Cloud Run
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+  - 'run'
+  - 'deploy'
+  - 'storage-api-proxy'
+  - '--image'
+  - 'gcr.io/$PROJECT_ID/storage-api-proxy:$COMMIT_SHA'
+  - '--region'
+  - 'us-central1'
+  - '--platform'
+  - 'managed'
+
+images:
+- 'gcr.io/$PROJECT_ID/storage-api-proxy:$COMMIT_SHA' 

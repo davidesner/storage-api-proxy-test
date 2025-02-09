@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - LOG_LEVEL=DEBUG
+      - DB_PATH=/app/data/workspaces.db
+      - STORAGE_API_HOST=${STORAGE_API_HOST:-connection.keboola.com}
+    volumes:
+      - ./data:/app/data  # Persist database
+      - ./src:/app/src    # For development hot-reload
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped 
