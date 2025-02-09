@@ -82,26 +82,20 @@ class ExternalApiClient:
             }
         }
 
-    async def reset_password(self, workspace_name: str, token: str) -> Dict:
+    async def reset_password(self, workspace_id: str, token: str) -> str:
         """Reset workspace password"""
         response = await self.client.post(
-            f"{self.base_url}/storage/workspaces/{workspace_name}/password",
+            f"{self.base_url}/storage/workspaces/{workspace_id}/password",
             headers=self._get_headers(token)
         )
         
-        if response.status_code != 200:
+        if response.status_code != 201:
             error_data = response.json()
             raise Exception(error_data.get("message", "Failed to reset password"))
             
         workspace_data = response.json()
-        return {
-            "host": workspace_data.get("connection", {}).get("host"),
-            "warehouse": workspace_data.get("connection", {}).get("warehouse"),
-            "database": workspace_data.get("connection", {}).get("database"),
-            "schema": workspace_data.get("connection", {}).get("schema"),
-            "user": workspace_data.get("connection", {}).get("user"),
-            "password": workspace_data.get("connection", {}).get("password")
-        }
+        return workspace_data.get("password")
+        
 
     async def __aenter__(self):
         return self

@@ -4,8 +4,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     # Keboola Storage API Configuration
-    storage_token: str
-    storage_api_host: str = "connection.keboola.com"  # Default value, can be overridden
+    storage_api_host: str = "connection.north-europe.azure.keboola.com"  # Default value, can be overridden
 
     # Application Configuration
     app_env: str = "development"

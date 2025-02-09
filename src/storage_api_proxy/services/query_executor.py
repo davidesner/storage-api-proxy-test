@@ -10,7 +10,7 @@ async def execute_query(credentials: Dict, query: str) -> Dict:
     conn = snowflake.connector.connect(
         user=credentials["user"],
         password=credentials["password"],
-        account=credentials["host"].split('.')[0],  # Extract account from host
+        account=credentials["host"].split('.snowflakecomputing.com')[0],  # Extract account from host
         warehouse=credentials["warehouse"],
         database=credentials["database"],
         schema=credentials["schema"]
